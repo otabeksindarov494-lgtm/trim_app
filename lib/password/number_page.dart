@@ -38,12 +38,13 @@ class _NumberPageState extends State<NumberPage> {
           children: [
             SizedBox(width: 24.w),
             Text(
-              'Введите номер',
+              'Введите номер телефон',
               style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, fontFamily: 'semibold'),
             ),
           ],
         ),
         SizedBox(height: 10.h),
+        SizedBox(height: 0.h),
         Container(
           width: 380.w,
           height: 60.h,
