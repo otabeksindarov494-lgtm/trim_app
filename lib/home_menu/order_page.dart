@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:trim_app/home_menu/active_widget.dart';
 import 'package:trim_app/home_menu/cancel_page.dart';
 import 'package:trim_app/home_menu/complete_widget.dart';
-
+import 'package:trim_app/l10n/app_localizations.dart';
 
 class OrderPage extends StatefulWidget {
   const OrderPage({super.key});
@@ -13,7 +13,7 @@ class OrderPage extends StatefulWidget {
 }
 
 class _OrderPageState extends State<OrderPage> {
-  final List<String> interests = ['Активно', 'Завершено', 'Отменено'];
+  final List<String> interestKeys = ['active', 'completed', 'cancelled'];
   int isSelected = 0;
 
   @override
@@ -23,61 +23,59 @@ class _OrderPageState extends State<OrderPage> {
       body: Padding(
         padding: EdgeInsets.only(top: 68.h, left: 24.w, right: 24.w),
         child: Column(
-        children: [
-          Row(
-            children: [
-              Image.asset('assets/images/img_9.png', width: 34.w, height: 34.h),
-              SizedBox(width: 16.w),
-              Text(
-                'Мои заказы',
-                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700),
-              ),
-              Spacer(),
-              Image.asset(
-                'assets/images/img_36.png',
-                width: 24.w,
-                height: 24.h,
-                color: Colors.black,
-              ),
-              SizedBox(width: 15.w),
-              Image.asset('assets/images/img_30.png', width: 28.w, height: 28.h),
-            ],
-          ),
-          SizedBox(height: 24.h),
-          SizedBox(
-            height: 40.h,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: interests.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: EdgeInsets.only(right: 8.w),
-                  child: categoryButton(
-                    interests[index],
-                    index == isSelected,
-                  ),
-                );
-              },
+          children: [
+            Row(
+              children: [
+                Image.asset('assets/images/img_9.png', width: 34.w, height: 34.h),
+                SizedBox(width: 16.w),
+                Text(
+                  context.tr('my_orders'),
+                  style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700),
+                ),
+                Spacer(),
+                Image.asset(
+                  'assets/images/img_36.png',
+                  width: 24.w,
+                  height: 24.h,
+                  color: Colors.black,
+                ),
+                SizedBox(width: 15.w),
+                Image.asset('assets/images/img_30.png', width: 28.w, height: 28.h),
+              ],
             ),
-          ),
-          SizedBox(height: 24.h),
-          if(isSelected == 0)
-            ActiveWidget(),
-          if(isSelected == 1)
-            CompleteWidget(),
-          if(isSelected == 2)
-            CancelPage(),
-        ],
-                  ),
+            SizedBox(height: 24.h),
+            SizedBox(
+              height: 40.h,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: interestKeys.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: EdgeInsets.only(right: 8.w),
+                    child: categoryButton(
+                      context.tr(interestKeys[index]),
+                      index == isSelected,
+                      index,
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: 24.h),
+            if (isSelected == 0) ActiveWidget(),
+            if (isSelected == 1) CompleteWidget(),
+            if (isSelected == 2) CancelPage(),
+          ],
+        ),
       ),
     );
   }
 
-  Widget categoryButton(String text, bool selected) {
+  Widget categoryButton(String text, bool selected, int index) {
     return GestureDetector(
       onTap: () {
         setState(() {
-          isSelected = interests.indexOf(text);
+          isSelected = index;
         });
       },
       child: Container(

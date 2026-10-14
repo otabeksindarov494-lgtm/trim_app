@@ -1,5 +1,9 @@
 import 'package:equatable/equatable.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+extension FirebaseUserExtension on User {
+  String get id => uid;
+}
 
 abstract class AuthState extends Equatable {
   const AuthState();

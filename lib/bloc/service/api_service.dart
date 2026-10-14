@@ -1,25 +1,27 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:trim_app/bloc/model/profile_model.dart';
+
 class ApiService {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<ProfileModel> getProfile(String profileId) async {
-    final response = await _supabase
-        .from('profiles')
-        .select()
-        .eq('id', profileId)
-        .maybeSingle();
-
-    return ProfileModel.fromJson(response!);
+    final doc = await _firestore.collection('profiles').doc(profileId).get();
+    if (!doc.exists || doc.data() == null) {
+      throw Exception('Profile topilmadi');
+    }
+    final data = doc.data()!;
+    data['id'] = doc.id;
+    return ProfileModel.fromJson(data);
   }
+
   Future<void> createProfile({
     required String profileId,
     required String email,
   }) async {
-    await _supabase.from('profiles').insert({
+    await _firestore.collection('profiles').doc(profileId).set({
       'id': profileId,
       'email': email,
-    });
+    }, SetOptions(merge: true));
   }
 
   Future<void> updateProfile({
@@ -41,13 +43,15 @@ class ApiService {
     if (birthday.isNotEmpty) data['birthday'] = birthday;
     if (gender != null) data['gender'] = gender;
 
-    await _supabase.from('profiles').update(data).eq('id', profileId);
+    await _firestore.collection('profiles').doc(profileId).set(data, SetOptions(merge: true));
   }
-  Future<List<Map<String, dynamic>>> getSalons() async {
-    final response = await _supabase
-        .from('salon')
-        .select();
 
-    return List<Map<String, dynamic>>.from(response);
+  Future<List<Map<String, dynamic>>> getSalons() async {
+    final snapshot = await _firestore.collection('salons').get();
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id;
+      return data;
+    }).toList();
   }
 }

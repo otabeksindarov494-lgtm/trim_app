@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "64441714266",
+    "project_id": "trimapp-47ab1",
+    "storage_bucket": "trimapp-47ab1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:64441714266:android:6c57bce86d133fc5503a63",
+        "android_client_info": {
+          "package_name": "com.example.trim_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6EY6eOK_gG6vypYlW1uIiFIolQAwrfJE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../provider/repository/booking_repository.dart';
 import 'booking_event.dart';
 import 'booking_state.dart';
@@ -19,7 +19,7 @@ class BookingBloc extends Bloc<BookingEvent, BookingState> {
       ) async {
     emit(BookingLoading());
 
-    final userId = Supabase.instance.client.auth.currentUser?.id;
+    final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) {
       emit(const BookingFailure('Foydalanuvchi tizimga kirmagan'));
       return;

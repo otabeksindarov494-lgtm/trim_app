@@ -1,18 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:http/http.dart';
-import 'package:pinput/pinput.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
-import 'package:trim_app/authorization/authorization_page.dart';
 import 'package:trim_app/authorization/create_profile.dart';
-import 'package:trim_app/home_menu/navigation_page.dart';
 import 'package:trim_app/profile/action_page.dart';
 
 import 'auth_bloc/auth_bloc.dart';
 import 'auth_bloc/auth_event.dart';
 import 'auth_bloc/auth_state.dart';
-import 'home_page.dart';
 
 class EmailPage extends StatefulWidget {
   const EmailPage({super.key, required this.listImage});

@@ -1,38 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:trim_app/l10n/app_localizations.dart';
+import 'package:trim_app/l10n/language_cubit.dart';
 
-class Language {
-  final String name;
-  final bool suggested;
+class LanguageItem {
+  final String code;
+  final String nameKey;
 
-  Language({required this.name, this.suggested = false});
+  const LanguageItem({required this.code, required this.nameKey});
 }
 
-final languages = [
-  Language(name: "Русский (RUS)", suggested: true),
-  Language(name: "English (US)", suggested: true),
-  Language(name: "Mandarin"),
-  Language(name: "Hindi"),
-  Language(name: "Spanish"),
-  Language(name: "French"),
-  Language(name: "Arabic"),
-  Language(name: "Bengali"),
-  Language(name: "Russian"),
-  Language(name: "Indonesia"),
-];
-
-class LanguagePage extends StatefulWidget {
+class LanguagePage extends StatelessWidget {
   const LanguagePage({super.key});
 
-  @override
-  State<LanguagePage> createState() => _LanguagePageState();
-}
-
-class _LanguagePageState extends State<LanguagePage> {
-  String selectedLanguage = "English (US)";
+  static const List<LanguageItem> languages = [
+    LanguageItem(code: 'uz', nameKey: 'uzbek'),
+    LanguageItem(code: 'ru', nameKey: 'russian'),
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final currentLocale = context.watch<LanguageCubit>().state;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(
@@ -55,84 +45,66 @@ class _LanguagePageState extends State<LanguagePage> {
                 ),
                 SizedBox(width: 20.w),
                 Text(
-                  'Language & Region',
-                  style: TextStyle(fontSize: 24.h, fontWeight: FontWeight.w700),
+                  context.tr('language_and_region'),
+                  style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w700),
                 ),
               ],
             ),
+            SizedBox(height: 33.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              child: Text(
+                context.tr('suggested'),
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            SizedBox(height: 20.h),
             Expanded(
               child: ListView.builder(
                 padding: EdgeInsets.symmetric(horizontal: 24.w),
-                itemCount: languages.length + 2,
+                itemCount: languages.length,
                 itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: 40.h, top: 33.h),
-                      child: Text(
-                        "Suggested",
-                        style: TextStyle(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    );
-                  }
+                  final lang = languages[index];
 
-                  if (index == 3) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Divider(height: 2.h, color: Color(0xffEEEEEE), thickness: 2),
-                        SizedBox(height: 24),
-                        Text(
-                          "Others",
-                          style: TextStyle(
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        SizedBox(height: 20.h),
-                      ],
-                    );
-                  }
-
-                  final language = index < 3
-                      ? languages[index - 1]
-                      : languages[index - 2];
-
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: 28.h),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            language.name,
-                            style: TextStyle(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.w500,
+                  return GestureDetector(
+                    onTap: () {
+                      context.read<LanguageCubit>().changeLanguage(lang.code);
+                    },
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: 28.h),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              context.tr(lang.nameKey),
+                              style: TextStyle(
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
-                        ),
-
-                        SizedBox(
-                          child: Radio<String>(
-                            value: language.name,
-                            groupValue: selectedLanguage,
-                            activeColor: Color(0xffFF9500),
-                            fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-                              if (states.contains(MaterialState.selected)) {
-                                return Color(0xffFF9500);
+                          Radio<String>(
+                            value: lang.code,
+                            groupValue: currentLocale.languageCode,
+                            activeColor: const Color(0xffFF9500),
+                            fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+                              if (states.contains(WidgetState.selected)) {
+                                return const Color(0xffFF9500);
                               }
-                              return Color(0xffFF9500);
+                              return const Color(0xffFF9500);
                             }),
                             onChanged: (value) {
-                              setState(() {
-                                selectedLanguage = value!;
-                              });
+                              if (value != null) {
+                                context.read<LanguageCubit>().changeLanguage(value);
+                              }
                             },
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },

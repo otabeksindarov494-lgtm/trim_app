@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:trim_app/bloc/provider/profile_bloc.dart';
 import 'package:trim_app/bloc/provider/profile_state.dart';
+import 'package:trim_app/l10n/app_localizations.dart';
 
 import '../bloc/provider/profile_event.dart';
 
@@ -25,11 +26,11 @@ class _EditProfileState extends State<EditProfile> {
   String? selectedGender;
 
   Future<String> getOrCreateProfileId() async {
-    final user = Supabase.instance.client.auth.currentUser;
+    final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       throw Exception('Foydalanuvchi tizimga kirmagan');
     }
-    return user.id;
+    return user.uid;
   }
 
   Future<void> saveProfile() async {
@@ -38,7 +39,7 @@ class _EditProfileState extends State<EditProfile> {
     if (nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Ismingizni kiriting')));
+      ).showSnackBar(SnackBar(content: Text(context.tr('your_name'))));
       return;
     }
 
@@ -99,7 +100,7 @@ class _EditProfileState extends State<EditProfile> {
                   ),
                   SizedBox(width: 20.w),
                   Text(
-                    'Изменить профиль',
+                    context.tr('change_profile'),
                     style: TextStyle(
                       fontSize: 24.sp,
                       fontWeight: FontWeight.w700,
@@ -113,21 +114,21 @@ class _EditProfileState extends State<EditProfile> {
                 height: 56.h,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16.r),
-                  color: Color(0xffFAFAFA),
-                  border: Border.all(color: Color(0xffEEEEEE)),
+                  color: const Color(0xffFAFAFA),
+                  border: Border.all(color: const Color(0xffEEEEEE)),
                 ),
                 child: Padding(
                   padding: EdgeInsets.only(left: 20.w, top: 3.h),
                   child: TextField(
                     controller: nameController,
-                    style: TextStyle(color: Colors.black),
+                    style: const TextStyle(color: Colors.black),
                     decoration: InputDecoration(
                       border: InputBorder.none,
-                      hintText: 'Ваше имя',
+                      hintText: context.tr('your_name'),
                       hintStyle: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xff677294),
+                        color: const Color(0xff677294),
                       ),
                     ),
                   ),
@@ -139,21 +140,21 @@ class _EditProfileState extends State<EditProfile> {
                 height: 56.h,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16.r),
-                  color: Color(0xffFAFAFA),
-                  border: Border.all(color: Color(0xffEEEEEE)),
+                  color: const Color(0xffFAFAFA),
+                  border: Border.all(color: const Color(0xffEEEEEE)),
                 ),
                 child: Padding(
                   padding: EdgeInsets.only(left: 20.w, top: 3.h),
                   child: TextField(
                     controller: nickNameController,
-                    style: TextStyle(color: Colors.black),
+                    style: const TextStyle(color: Colors.black),
                     decoration: InputDecoration(
                       border: InputBorder.none,
-                      hintText: 'Ваше фамилия',
+                      hintText: context.tr('your_surname'),
                       hintStyle: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w400,
-                        color: Color(0xff677294),
+                        color: const Color(0xff677294),
                       ),
                     ),
                   ),
@@ -165,8 +166,8 @@ class _EditProfileState extends State<EditProfile> {
                 height: 56.h,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16.r),
-                  color: Color(0xffFAFAFA),
-                  border: Border.all(color: Color(0xffEEEEEE)),
+                  color: const Color(0xffFAFAFA),
+                  border: Border.all(color: const Color(0xffEEEEEE)),
                 ),
                 child: Padding(
                   padding: EdgeInsets.only(left: 20.w, top: 0.h),
@@ -183,26 +184,25 @@ class _EditProfileState extends State<EditProfile> {
                             );
                             if (picked != null) {
                               birthController.text =
-                              '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                                  '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
                             }
                           },
                           child: TextField(
                             controller: birthController,
                             readOnly: true,
-                            style: TextStyle(color: Colors.black),
+                            style: const TextStyle(color: Colors.black),
                             decoration: InputDecoration(
                               border: InputBorder.none,
-                              hintText: 'Дата рождения',
+                              hintText: context.tr('birth_date'),
                               hintStyle: TextStyle(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w400,
-                                color: Color(0xff677294),
+                                color: const Color(0xff677294),
                               ),
                             ),
                           ),
                         ),
                       ),
-
                       Padding(
                         padding: EdgeInsets.only(right: 16.r),
                         child: Image.asset(
@@ -221,8 +221,8 @@ class _EditProfileState extends State<EditProfile> {
                 height: 56.h,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16.r),
-                  color: Color(0xffFAFAFA),
-                  border: Border.all(color: Color(0xffEEEEEE)),
+                  color: const Color(0xffFAFAFA),
+                  border: Border.all(color: const Color(0xffEEEEEE)),
                 ),
                 child: Padding(
                   padding: EdgeInsets.only(left: 20.w, top: 3.h),
@@ -237,11 +237,11 @@ class _EditProfileState extends State<EditProfile> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   ListTile(
-                                    title: const Text('Мужчина'),
+                                    title: Text(context.tr('male')),
                                     onTap: () => Navigator.pop(context, 'male'),
                                   ),
                                   ListTile(
-                                    title: const Text('Женщина'),
+                                    title: Text(context.tr('female')),
                                     onTap: () => Navigator.pop(context, 'female'),
                                   ),
                                 ],
@@ -252,14 +252,14 @@ class _EditProfileState extends State<EditProfile> {
                             }
                           },
                           child: TextField(
-                            style: TextStyle(color: Colors.black),
+                            style: const TextStyle(color: Colors.black),
                             decoration: InputDecoration(
                               border: InputBorder.none,
-                              hintText: 'Ваш пол',
+                              hintText: context.tr('gender'),
                               hintStyle: TextStyle(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w400,
-                                color: Color(0xff677294),
+                                color: const Color(0xff677294),
                               ),
                             ),
                           ),
@@ -283,8 +283,8 @@ class _EditProfileState extends State<EditProfile> {
                 height: 56.h,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16.r),
-                  color: Color(0xffFAFAFA),
-                  border: Border.all(color: Color(0xffEEEEEE)),
+                  color: const Color(0xffFAFAFA),
+                  border: Border.all(color: const Color(0xffEEEEEE)),
                 ),
                 child: Padding(
                   padding: EdgeInsets.only(left: 20.w, top: 0.h),
@@ -293,14 +293,14 @@ class _EditProfileState extends State<EditProfile> {
                       Expanded(
                         child: TextField(
                           controller: emailController,
-                          style: TextStyle(color: Colors.black),
+                          style: const TextStyle(color: Colors.black),
                           decoration: InputDecoration(
                             border: InputBorder.none,
-                            hintText: 'Введите почту',
+                            hintText: context.tr('enter_email'),
                             hintStyle: TextStyle(
                               fontSize: 14.sp,
                               fontWeight: FontWeight.w400,
-                              color: Color(0xff677294),
+                              color: const Color(0xff677294),
                             ),
                           ),
                         ),
@@ -323,8 +323,8 @@ class _EditProfileState extends State<EditProfile> {
                 height: 56.h,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16.r),
-                  color: Color(0xffFAFAFA),
-                  border: Border.all(color: Color(0xffEEEEEE)),
+                  color: const Color(0xffFAFAFA),
+                  border: Border.all(color: const Color(0xffEEEEEE)),
                 ),
                 child: Padding(
                   padding: EdgeInsets.only(left: 20.w, top: 3.h),
@@ -333,14 +333,14 @@ class _EditProfileState extends State<EditProfile> {
                       Expanded(
                         child: TextField(
                           controller: phoneController,
-                          style: TextStyle(color: Colors.black),
+                          style: const TextStyle(color: Colors.black),
                           decoration: InputDecoration(
                             border: InputBorder.none,
-                            hintText: 'Номер',
+                            hintText: context.tr('phone_number'),
                             hintStyle: TextStyle(
                               fontSize: 14.sp,
                               fontWeight: FontWeight.w400,
-                              color: Color(0xff677294),
+                              color: const Color(0xff677294),
                             ),
                           ),
                         ),
@@ -369,7 +369,7 @@ class _EditProfileState extends State<EditProfile> {
                       height: 56.h,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(100.r),
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           colors: [Color(0xffFFAB38), Color(0xffFB9400)],
                         ),
                       ),
@@ -377,13 +377,13 @@ class _EditProfileState extends State<EditProfile> {
                         child: isLoading
                             ? const CircularProgressIndicator(color: Colors.white)
                             : Text(
-                          'Сохранить',
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
+                                context.tr('save'),
+                                style: TextStyle(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
                   );

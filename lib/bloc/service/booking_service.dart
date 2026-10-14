@@ -1,8 +1,8 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/booking_model.dart';
 
 class BookingService {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<Booking> createBooking({
     required String userId,
@@ -12,7 +12,7 @@ class BookingService {
     required DateTime bookingDate,
     required String bookingTime,
   }) async {
-    final response = await _supabase.from('bookings').insert({
+    final data = <String, dynamic>{
       'user_id': userId,
       'salon_id': salonId,
       'master_id': masterId,
@@ -20,8 +20,17 @@ class BookingService {
       'booking_date': bookingDate.toIso8601String().split('T').first,
       'booking_time': bookingTime,
       'status': 'pending',
-    }).select().single();
+      'created_at': FieldValue.serverTimestamp(),
+    };
 
-    return Booking.fromJson(response);
+    final docRef = await _firestore.collection('bookings').add(data);
+    final docSnapshot = await docRef.get();
+    final resultData = Map<String, dynamic>.from(docSnapshot.data() ?? {});
+    resultData['id'] = docRef.id;
+    if (resultData['booking_date'] == null) {
+      resultData['booking_date'] = bookingDate.toIso8601String().split('T').first;
+    }
+
+    return Booking.fromJson(resultData);
   }
 }

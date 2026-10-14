@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:trim_app/home_menu/home_menu.dart';
 import 'package:trim_app/home_menu/navigation_page.dart';
 import 'package:trim_app/profile/action_page.dart';
@@ -49,21 +50,25 @@ class _CheckPageState extends State<CheckPage> {
   }
 
   Future<void> _loadUserProfile() async {
-    final userId = Supabase.instance.client.auth.currentUser?.id;
+    final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return;
 
     try {
-      final response = await Supabase.instance.client
-          .from('profiles')
-          .select()
-          .eq('id', userId)
-          .single();
+      final doc = await FirebaseFirestore.instance
+          .collection('profiles')
+          .doc(userId)
+          .get();
 
-      setState(() {
-        userName = response['name'] ?? '';
-        userPhone = response['phone'] ?? '';
-        isLoadingProfile = false;
-      });
+      if (doc.exists && doc.data() != null) {
+        final response = doc.data()!;
+        setState(() {
+          userName = response['name'] ?? '';
+          userPhone = response['phone'] ?? '';
+          isLoadingProfile = false;
+        });
+      } else {
+        setState(() => isLoadingProfile = false);
+      }
     } catch (e) {
       setState(() => isLoadingProfile = false);
     }
@@ -78,7 +83,7 @@ class _CheckPageState extends State<CheckPage> {
   }
 
   void _onBookPressed(BuildContext context) {
-    final userId = Supabase.instance.client.auth.currentUser?.id;
+    final userId = FirebaseAuth.instance.currentUser?.uid;
 
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(

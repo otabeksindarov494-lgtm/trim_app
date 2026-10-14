@@ -4,6 +4,7 @@ import 'package:trim_app/change_profile/change_profile.dart';
 import 'package:trim_app/chat_page/chat_page.dart';
 import 'package:trim_app/home_menu/map_page.dart';
 import 'package:trim_app/home_menu/order_page.dart';
+import 'package:trim_app/l10n/app_localizations.dart';
 import 'package:trim_app/profile/action_page.dart';
 import 'home_menu.dart';
 
@@ -59,11 +60,11 @@ class _NavigationPageState extends State<NavigationPage> {
                       ),
                       child: Row(
                         children: [
-                          navItem(0, 'assets/images/img_18.png', 'Главная'),
-                          navItem(1, 'assets/images/img_19.png', 'По карте'),
-                          navItem(2, 'assets/images/img_20.png', 'Заказы'),
-                          navItem(3, 'assets/images/img_21.png', 'Чат'),
-                          navItem(4, 'assets/images/img_22.png', 'Профиль'),
+                          navItem(0, 'assets/images/img_18.png', context.tr('home')),
+                          navItem(1, 'assets/images/img_19.png', context.tr('map')),
+                          navItem(2, 'assets/images/img_20.png', context.tr('orders')),
+                          navItem(3, 'assets/images/img_21.png', context.tr('chat')),
+                          navItem(4, 'assets/images/img_22.png', context.tr('profile')),
                         ],
                       ),
                     ),

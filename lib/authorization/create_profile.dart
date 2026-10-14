@@ -46,7 +46,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
       );
       return;
     }
-
+    print('saveProfile chaqirildi');
     context.read<ProfileBloc>().add(
       UpdateProfile(
         profileId: widget.profileId,
@@ -64,6 +64,7 @@ class _CreateProfilePageState extends State<CreateProfilePage> {
   Widget build(BuildContext context) {
     return BlocListener<ProfileBloc, ProfileState>(
       listener: (context, state) {
+        print('STATE: $state');
         if (state is ProfileLoaded) {
           Navigator.pushReplacement(
             context,

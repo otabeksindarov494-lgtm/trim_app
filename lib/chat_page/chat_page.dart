@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:trim_app/chat_page/call_page.dart';
 import 'package:trim_app/chat_page/chat_widget.dart';
+import 'package:trim_app/l10n/app_localizations.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -11,15 +12,15 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-
-  final List<String> interests = ['Чат', 'Звонки',];
+  final List<String> interestKeys = ['chat', 'calls'];
   int isSelected = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(padding: EdgeInsets.only(top: 84.h, left: 24.w, right: 24.w),
+      body: Padding(
+        padding: EdgeInsets.only(top: 84.h, left: 24.w, right: 24.w),
         child: Column(
           children: [
             Row(
@@ -27,7 +28,7 @@ class _ChatPageState extends State<ChatPage> {
                 Image.asset('assets/images/img_9.png', width: 34.w, height: 34.h),
                 SizedBox(width: 16.w),
                 Text(
-                  'Мои заказы',
+                  context.tr('chat'),
                   style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700),
                 ),
                 Spacer(),
@@ -46,35 +47,35 @@ class _ChatPageState extends State<ChatPage> {
               height: 40.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: interests.length,
+                itemCount: interestKeys.length,
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: EdgeInsets.only(right: 8.w),
                     child: categoryButton(
-                      interests[index],
+                      context.tr(interestKeys[index]),
                       index == isSelected,
+                      index,
                     ),
                   );
                 },
               ),
             ),
             SizedBox(height: 24.h),
-            Divider(height: 1.h, thickness: 2, color: Color(0xffEEEEEE),),
+            Divider(height: 1.h, thickness: 2, color: const Color(0xffEEEEEE)),
             SizedBox(height: 24.h),
-            if(isSelected == 0)
-              CallPage(),
-            if(isSelected == 1)
-              ChatWidget(),
+            if (isSelected == 0) CallPage(),
+            if (isSelected == 1) ChatWidget(),
           ],
         ),
       ),
     );
   }
-  Widget categoryButton(String text, bool selected) {
+
+  Widget categoryButton(String text, bool selected, int index) {
     return GestureDetector(
       onTap: () {
         setState(() {
-          isSelected = interests.indexOf(text);
+          isSelected = index;
         });
       },
       child: Container(

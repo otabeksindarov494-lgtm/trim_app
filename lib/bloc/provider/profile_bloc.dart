@@ -30,7 +30,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       UpdateProfile event,
       Emitter<ProfileState> emit,
       ) async {
+    print('2. Bloc: UpdateProfile keldi');
     emit(ProfileLoading());
+    print('3. Bloc: ProfileUpdating chiqarildi');
     try {
       await _repository.saveProfile(
         profileId: event.profileId,
@@ -43,8 +45,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       );
       final profile =
       await _repository.fetchProfile(event.profileId);
+      print('4. Bloc: so\'rov tugadi');
       emit(ProfileLoaded(profile));
     } catch (e) {
+      print('XATO: $e');
       emit(ProfileError(e.toString()));
     }
   }

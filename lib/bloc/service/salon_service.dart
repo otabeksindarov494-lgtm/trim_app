@@ -1,18 +1,16 @@
-
-
-import 'dart:convert';
-
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:trim_app/bloc/model/subscription_model.dart';
 
 class SalonService {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<List<Subscriptions>> getSalons() async {
-    final response = await _supabase.from('salons').select();
+    final snapshot = await _firestore.collection('salons').get();
 
-    return (response as List)
-    .map((json) => Subscriptions.fromJson(json))
-    .toList();
+    return snapshot.docs.map((doc) {
+      final data = Map<String, dynamic>.from(doc.data());
+      data['id'] = doc.id;
+      return Subscriptions.fromJson(data);
+    }).toList();
   }
 }

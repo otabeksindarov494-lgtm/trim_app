@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:trim_app/bloc/model/message_model.dart';
 import 'package:trim_app/bloc/provider/repository/message_repository.dart';
 
@@ -54,7 +54,7 @@ class _MessagePageState extends State<MessagePage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUserid = Supabase.instance.client.auth.currentUser?.id;
+    final currentUserid = FirebaseAuth.instance.currentUser?.uid;
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(

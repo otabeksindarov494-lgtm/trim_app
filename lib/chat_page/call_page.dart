@@ -97,10 +97,9 @@ class _CallPageState extends State<CallPage> {
                       ),
                     ),
                     Spacer(),
-                    SizedBox(height: 100,),
+                    SizedBox(height: 50),
                     Container(
-                      height: MediaQuery.of(context).size.height * 5,
-                      width: 300,
+                      height: 50,
                     ),
                     Column(
                       children: [

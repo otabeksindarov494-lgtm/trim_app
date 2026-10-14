@@ -1,5 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../service/auth_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRepository {
   final AuthService _authService;
@@ -11,12 +11,12 @@ class AuthRepository {
     required String email,
     required String password,
   }) async {
-    final response = await _authService.signUpWithEmail(
+    final credential = await _authService.signUpWithEmail(
       email: email,
       password: password,
     );
 
-    final user = response.user;
+    final user = credential.user;
     if (user == null) {
       throw Exception('Ro\'yxatdan o\'tishda xatolik yuz berdi');
     }
@@ -27,12 +27,12 @@ class AuthRepository {
     required String email,
     required String password,
   }) async {
-    final response = await _authService.signInWithEmail(
+    final credential = await _authService.signInWithEmail(
       email: email,
       password: password,
     );
 
-    final user = response.user;
+    final user = credential.user;
     if (user == null) {
       throw Exception('Kirishda xatolik yuz berdi');
     }
@@ -47,12 +47,7 @@ class AuthRepository {
     required String phone,
     required String otp,
   }) async {
-    final response = await _authService.verifyPhoneOtp(
-      phone: phone,
-      otp: otp,
-    );
-
-    final user = response.user;
+    final user = _authService.currentUser;
     if (user == null) {
       throw Exception('Kod noto\'g\'ri yoki muddati o\'tgan');
     }

@@ -1,52 +1,62 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Email orqali ro'yxatdan o'tish
-  Future<AuthResponse> signUpWithEmail({
+  Future<UserCredential> signUpWithEmail({
     required String email,
     required String password,
   }) async {
-    return await _supabase.auth.signUp(
+    return await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
   }
 
   // Email orqali kirish
-  Future<AuthResponse> signInWithEmail({
+  Future<UserCredential> signInWithEmail({
     required String email,
     required String password,
   }) async {
-    return await _supabase.auth.signInWithPassword(
+    return await _auth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
   }
 
   // Telefon raqamga OTP (bir martalik kod) yuborish
-  Future<void> sendOtpToPhone(String phone) async {
-    await _supabase.auth.signInWithOtp(phone: phone);
-  }
-
-  // Foydalanuvchi kiritgan OTP kodni tekshirish
-  Future<AuthResponse> verifyPhoneOtp({
-    required String phone,
-    required String otp,
+  Future<void> sendOtpToPhone(
+    String phone, {
+    PhoneVerificationCompleted? verificationCompleted,
+    PhoneVerificationFailed? verificationFailed,
+    PhoneCodeSent? codeSent,
+    PhoneCodeAutoRetrievalTimeout? codeAutoRetrievalTimeout,
   }) async {
-    return await _supabase.auth.verifyOTP(
-      type: OtpType.sms,
-      phone: phone,
-      token: otp,
+    await _auth.verifyPhoneNumber(
+      phoneNumber: phone,
+      verificationCompleted: verificationCompleted ?? (PhoneAuthCredential c) {},
+      verificationFailed: verificationFailed ?? (FirebaseAuthException e) {},
+      codeSent: codeSent ?? (String id, int? token) {},
+      codeAutoRetrievalTimeout: codeAutoRetrievalTimeout ?? (String id) {},
     );
   }
 
-  Future<void> signOut() async {
-    await _supabase.auth.signOut();
+  // Foydalanuvchi kiritgan OTP kodni tekshirish
+  Future<UserCredential> verifyPhoneOtp({
+    required String verificationId,
+    required String smsCode,
+  }) async {
+    final credential = PhoneAuthProvider.credential(
+      verificationId: verificationId,
+      smsCode: smsCode,
+    );
+    return await _auth.signInWithCredential(credential);
   }
 
-  User? get currentUser => _supabase.auth.currentUser;
+  Future<void> signOut() async {
+    await _auth.signOut();
+  }
 
-  get user => null;
+  User? get currentUser => _auth.currentUser;
 }

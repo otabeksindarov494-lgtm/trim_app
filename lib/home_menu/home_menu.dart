@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:trim_app/bloc/salon_bloc/salon_state.dart';
 import 'package:trim_app/home_menu/notification_page.dart' hide subscriptions;
 import 'package:trim_app/home_menu/search_page.dart' hide subscriptions;
+import 'package:trim_app/l10n/app_localizations.dart';
 import 'package:trim_app/profile/action_page.dart';
 import 'package:trim_app/profile/profile_page.dart';
 import '../bloc/provider/repository/salon_repository.dart';
@@ -16,6 +17,7 @@ class HomeMenu extends StatelessWidget {
 
   final List<ListImage> listImage;
 
+  @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) =>
@@ -39,7 +41,7 @@ class _HomeMenuBodyState extends State<_HomeMenuBody> {
 
   final TextEditingController controller = TextEditingController();
 
-  final List<String> interests = ['Все', 'Стрижки', 'Макияж', 'Маникюр'];
+  final List<String> interestKeys = ['all', 'haircuts', 'makeup', 'manicure'];
   int isSelected = 0;
 
   @override
@@ -160,7 +162,7 @@ class _HomeMenuBodyState extends State<_HomeMenuBody> {
                         ),
                         SizedBox(width: 15.w),
                         Text(
-                          'Поиск',
+                          context.tr('search'),
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w400,
@@ -219,7 +221,7 @@ class _HomeMenuBodyState extends State<_HomeMenuBody> {
                   children: [
                     SizedBox(width: 24.w),
                     Text(
-                      'Близко к вашей локации',
+                      context.tr('near_you'),
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w700,
@@ -229,7 +231,7 @@ class _HomeMenuBodyState extends State<_HomeMenuBody> {
                     Padding(
                       padding: EdgeInsets.only(right: 24.w),
                       child: Text(
-                        'Все',
+                        context.tr('all'),
                         style: TextStyle(
                           color: Color(0xffFD9203),
                           fontSize: 16.sp,
@@ -244,14 +246,15 @@ class _HomeMenuBodyState extends State<_HomeMenuBody> {
                   height: 40.h,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: interests.length,
+                    itemCount: interestKeys.length,
                     padding: EdgeInsets.symmetric(horizontal: 20.w),
                     itemBuilder: (context, index) {
                       return Padding(
                         padding: EdgeInsets.only(right: 12.w),
                         child: categoryButton(
-                          interests[index],
+                          context.tr(interestKeys[index]),
                           index == isSelected,
+                          index,
                         ),
                       );
                     },
@@ -430,11 +433,11 @@ class _HomeMenuBodyState extends State<_HomeMenuBody> {
     );
   }
 
-  Widget categoryButton(String text, bool selected) {
+  Widget categoryButton(String text, bool selected, int index) {
     return GestureDetector(
       onTap: () {
         setState(() {
-          isSelected = interests.indexOf(text);
+          isSelected = index;
         });
       },
       child: Container(

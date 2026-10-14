@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:trim_app/home_menu/navigation_page.dart';
 import 'package:trim_app/password/password_page.dart';
 import 'package:trim_app/profile/action_page.dart';
@@ -43,14 +43,14 @@ class _PhoneWidgetState extends State<PhoneWidget> {
     });
 
     try {
-      final response = await Supabase.instance.client.auth.signInWithPassword(
-        phone: '+998$phone',
+      final response = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: '$phone@trim.app',
         password: password,
       );
 
       if (response.user != null) {
         print('LOGIN SUCCESS');
-        print('USER ID: ${response.user!.id}');
+        print('USER ID: ${response.user!.uid}');
 
         if (!mounted) return;
 
@@ -61,12 +61,12 @@ class _PhoneWidgetState extends State<PhoneWidget> {
           ),
         );
       }
-    } on AuthException catch (e) {
+    } on FirebaseAuthException catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(e.message)));
+      ).showSnackBar(SnackBar(content: Text(e.message ?? e.toString())));
     } catch (e) {
       if (!mounted) return;
 

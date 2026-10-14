@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:pinput/pinput.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:trim_app/authorization/authorization_page.dart';
 import 'package:trim_app/profile/action_page.dart';
-
-import 'main.dart';
 
 class PhonePage extends StatefulWidget {
   const PhonePage({super.key, required this.listImage});
 
-  final List <ListImage> listImage;
+  final List<ListImage> listImage;
 
   @override
   State<PhonePage> createState() => _PhonePageState();
@@ -28,7 +27,6 @@ class _PhonePageState extends State<PhonePage> {
   );
   bool isLoading = false;
   bool obscurePassword = true;
-  final supabase = Supabase.instance.client;
 
   Future<void> register() async {
     final phone = phoneController.text
@@ -65,13 +63,12 @@ class _PhonePageState extends State<PhonePage> {
     });
 
     try {
-      final response = await supabase.auth.signUp(
-        phone: fullPhone,
+      final response = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: '$phone@trim.app',
         password: password,
       );
 
-      print('AUTH USER ID: ${response.user?.id}');
-      print('AUTH PHONE: ${response.user?.phone}');
+      print('AUTH USER ID: ${response.user?.uid}');
 
       if (!mounted) return;
 
@@ -81,7 +78,7 @@ class _PhonePageState extends State<PhonePage> {
 
       // SMS OTP oynasini ochamiz
       showOtpBottomSheet(fullPhone);
-    } on AuthException catch (e) {
+    } on FirebaseAuthException catch (e) {
       if (!mounted) return;
 
       setState(() {
@@ -90,7 +87,7 @@ class _PhonePageState extends State<PhonePage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.message),
+          content: Text(e.message ?? e.toString()),
         ),
       );
     } catch (e) {
@@ -259,28 +256,21 @@ class _PhonePageState extends State<PhonePage> {
     }
 
     try {
-      final response = await supabase.auth.verifyOTP(
-        phone: phone,
-        token: otp,
-        type: OtpType.sms,
-      );
-
-      final user = response.user;
+      final user = FirebaseAuth.instance.currentUser;
 
       if (user == null) {
         throw Exception('User topilmadi');
       }
 
       print('OTP TASDIQLANDI');
-      print('USER ID: ${user.id}');
-      print('USER PHONE: ${user.phone}');
+      print('USER ID: ${user.uid}');
 
-      await supabase.from('profiles').upsert(
+      await FirebaseFirestore.instance.collection('profiles').doc(user.uid).set(
         {
-          'id': user.id,
+          'id': user.uid,
           'phone': phone,
         },
-        onConflict: 'id',
+        SetOptions(merge: true),
       );
 
       print('PROFILE YARATILDI');
@@ -297,10 +287,10 @@ class _PhonePageState extends State<PhonePage> {
           ),
         ),
       );
-    } on AuthException catch (e) {
+    } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.message),
+          content: Text(e.message ?? e.toString()),
         ),
       );
     } catch (e) {
@@ -311,7 +301,6 @@ class _PhonePageState extends State<PhonePage> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -331,7 +320,7 @@ class _PhonePageState extends State<PhonePage> {
         ),
         SizedBox(height: 10.h),
         Container(
-          width: size.width / 3,
+          width: 380.w,
           height: 60.h,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16.r),
