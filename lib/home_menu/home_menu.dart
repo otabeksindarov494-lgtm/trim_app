@@ -316,14 +316,13 @@ class _HomeMenuBodyState extends State<_HomeMenuBody> {
                               child: Row(
                                 children: [
                                   ClipRRect(
-                                    borderRadius: BorderRadius.circular(0.r),
+                                    borderRadius: BorderRadius.circular(16.r),
                                     child: Padding(
                                       padding: EdgeInsets.only(bottom: 15.h),
-                                      child: Image.network(
+                                      child: _buildSalonImage(
                                         subscription.image,
                                         width: 80.w,
                                         height: 80.h,
-                                        fit: BoxFit.cover,
                                       ),
                                     ),
                                   ),
@@ -349,10 +348,13 @@ class _HomeMenuBodyState extends State<_HomeMenuBody> {
                                               ),
                                               child: GestureDetector(
                                                 onTap: () {
-                                                  setState(() {
-                                                    subscription.isEnabled =
-                                                        !subscription.isEnabled;
-                                                  });
+                                                  context.read<SalonBloc>().add(
+                                                        ToggleFavoriteRequested(
+                                                          salonId: subscription.id,
+                                                          currentStatus:
+                                                              subscription.isEnabled,
+                                                        ),
+                                                      );
                                                 },
                                                 child: subscription.isEnabled
                                                     ? Image.asset(
@@ -431,6 +433,43 @@ class _HomeMenuBodyState extends State<_HomeMenuBody> {
         ),
       ),
     );
+  }
+
+  Widget _buildSalonImage(String imagePath, {double? width, double? height, BoxFit fit = BoxFit.cover}) {
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return Image.network(
+        imagePath,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/images/img_23.png',
+          width: width,
+          height: height,
+          fit: fit,
+        ),
+      );
+    } else if (imagePath.isNotEmpty) {
+      return Image.asset(
+        imagePath,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/images/img_23.png',
+          width: width,
+          height: height,
+          fit: fit,
+        ),
+      );
+    } else {
+      return Image.asset(
+        'assets/images/img_23.png',
+        width: width,
+        height: height,
+        fit: fit,
+      );
+    }
   }
 
   Widget categoryButton(String text, bool selected, int index) {

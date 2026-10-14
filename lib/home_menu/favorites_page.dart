@@ -1,37 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-class Subscription {
-  final String image;
-  final String title;
-  final String podcastCount;
-  bool isEnabled;
-
-  Subscription({
-    required this.image,
-    required this.title,
-    required this.podcastCount,
-    this.isEnabled = false,
-  });
-}
-
-final List<Subscription> subscriptions = [
-  Subscription(
-    image: "assets/images/img_23.png",
-    title: 'Uncle Chill',
-    podcastCount: 'ТЦ Зарафшан, Матбуотчилар, 17',
-  ),
-  Subscription(
-    image: "assets/images/img_27.png",
-    title: 'Genesis',
-    podcastCount: 'Массив Буюк Ипак Йули, 45а',
-  ),
-  Subscription(
-    image: "assets/images/img_28.png",
-    title: 'Santander',
-    podcastCount: 'Улица Фурката, 2а',
-  ),
-];
+import 'package:trim_app/bloc/model/subscription_model.dart';
+import 'package:trim_app/bloc/salon_bloc/salon_bloc.dart';
+import 'package:trim_app/bloc/salon_bloc/salon_event.dart';
+import 'package:trim_app/bloc/salon_bloc/salon_state.dart';
+import 'package:trim_app/profile/profile_page.dart';
 
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
@@ -43,6 +17,49 @@ class FavoritesPage extends StatefulWidget {
 class _FavoritesPageState extends State<FavoritesPage> {
   final List<String> interests = ['Все', 'Стрижки', 'Макияж', 'Маникюр'];
   int isSelected = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<SalonBloc>().add(SalonsRequested());
+  }
+
+  Widget _buildSalonImage(String imagePath, {double? width, double? height, BoxFit fit = BoxFit.cover}) {
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return Image.network(
+        imagePath,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/images/img_23.png',
+          width: width,
+          height: height,
+          fit: fit,
+        ),
+      );
+    } else if (imagePath.isNotEmpty) {
+      return Image.asset(
+        imagePath,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/images/img_23.png',
+          width: width,
+          height: height,
+          fit: fit,
+        ),
+      );
+    } else {
+      return Image.asset(
+        'assets/images/img_23.png',
+        width: width,
+        height: height,
+        fit: fit,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,8 +87,11 @@ class _FavoritesPageState extends State<FavoritesPage> {
                   'Избранное',
                   style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.w700),
                 ),
-                SizedBox(width: 150.w),
-                Image.asset('assets/images/img_30.png', width: 28.w, height: 28.h),
+                Spacer(),
+                Padding(
+                  padding: EdgeInsets.only(right: 24.w),
+                  child: Image.asset('assets/images/img_30.png', width: 28.w, height: 28.h),
+                ),
               ],
             ),
             SizedBox(height: 33.h),
@@ -93,116 +113,165 @@ class _FavoritesPageState extends State<FavoritesPage> {
               ),
             ),
             SizedBox(height: 24.h),
-            Column(
-              children: subscriptions.map((subscription) {
-                return Container(
-                  margin: EdgeInsets.only(bottom: 24.h),
-                  width: 380.w,
-                  height: 110.h,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(24.r),
-                    color: Color(0xffFFFFFF),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0xffE9E9E9),
-                        blurRadius: 24.r,
-                        offset: Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 16.w, top: 15.h),
-                    child: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.asset(
-                            subscription.image,
-                            width: 80.w,
-                            height: 80.h,
-                            fit: BoxFit.cover,
-                          ),
+            Expanded(
+              child: BlocBuilder<SalonBloc, SalonState>(
+                builder: (context, state) {
+                  if (state is SalonLoading || state is SalonInitial) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (state is SalonError) {
+                    return Center(child: Text('Ошибка: ${state.message}'));
+                  }
+                  if (state is SalonLoaded) {
+                    final favoriteSalons = state.salons.where((s) => s.isEnabled).toList();
+
+                    if (favoriteSalons.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'Нет избранных салонов',
+                          style: TextStyle(fontSize: 16.sp, color: Colors.grey),
                         ),
-                        SizedBox(width: 16.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    subscription.title,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 16.sp,
-                                    ),
-                                  ),
-                                  Spacer(),
-                                  Padding(
-                                    padding: EdgeInsets.only(right: 24.w),
-                                    child: Image.asset(
-                                      'assets/images/img_29.png',
-                                      width: 24.w,
-                                      height: 24.h,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 5.h),
-                              Text(
-                                subscription.podcastCount,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Color(0xff616161),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      itemCount: favoriteSalons.length,
+                      itemBuilder: (context, index) {
+                        final subscription = favoriteSalons[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProfilePage(
+                                  profile: subscription,
+                                  listImage: const [],
                                 ),
                               ),
-                              SizedBox(height: 8.h),
-                              Row(
+                            );
+                          },
+                          child: Container(
+                            margin: EdgeInsets.only(bottom: 24.h),
+                            width: 380.w,
+                            height: 110.h,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24.r),
+                              color: Color(0xffFFFFFF),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(0xffE9E9E9),
+                                  blurRadius: 24.r,
+                                  offset: Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.only(left: 16.w, top: 15.h),
+                              child: Row(
                                 children: [
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 16.w),
-                                    child: Row(
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(16.r),
+                                    child: _buildSalonImage(
+                                      subscription.image,
+                                      width: 80.w,
+                                      height: 80.h,
+                                    ),
+                                  ),
+                                  SizedBox(width: 16.w),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Image.asset(
-                                          'assets/images/img_24.png',
-                                          width: 16.w,
-                                          height: 16.h,
+                                        Row(
+                                          children: [
+                                            Text(
+                                              subscription.title,
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 16.sp,
+                                              ),
+                                            ),
+                                            Spacer(),
+                                            Padding(
+                                              padding: EdgeInsets.only(right: 24.w),
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  context.read<SalonBloc>().add(
+                                                        ToggleFavoriteRequested(
+                                                          salonId: subscription.id,
+                                                          currentStatus:
+                                                              subscription.isEnabled,
+                                                        ),
+                                                      );
+                                                },
+                                                child: Image.asset(
+                                                  'assets/images/img_29.png',
+                                                  width: 24.w,
+                                                  height: 24.h,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        SizedBox(width: 2.w),
+                                        SizedBox(height: 5.h),
                                         Text(
-                                          '1.2 km',
-                                          style: TextStyle(
-                                            fontSize: 16.sp,
-                                            fontWeight: FontWeight.w400,
+                                          subscription.podcastCount,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Color(0xff616161),
                                           ),
+                                        ),
+                                        SizedBox(height: 8.h),
+                                        Row(
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Image.asset(
+                                                  'assets/images/img_24.png',
+                                                  width: 16.w,
+                                                  height: 16.h,
+                                                ),
+                                                SizedBox(width: 2.w),
+                                                Text(
+                                                  '1.2 km',
+                                                  style: TextStyle(
+                                                    fontSize: 16.sp,
+                                                    fontWeight: FontWeight.w400,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(width: 25.w),
+                                            Image.asset(
+                                              'assets/images/img_25.png',
+                                              width: 20.w,
+                                              height: 20.h,
+                                            ),
+                                            SizedBox(width: 2.w),
+                                            Text(
+                                              subscription.rating.toString(),
+                                              style: TextStyle(
+                                                fontSize: 16.sp,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
                                   ),
-                                  SizedBox(width: 25.w),
-                                  Image.asset(
-                                    'assets/images/img_25.png',
-                                    width: 20.w,
-                                    height: 20.h,
-                                  ),
-                                  SizedBox(width: 2.w),
-                                  Text(
-                                    '4.2',
-                                    style: TextStyle(
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
                                 ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
+                        );
+                      },
+                    );
+                  }
+                  return const SizedBox();
+                },
+              ),
             ),
           ],
         ),

@@ -1,43 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
+import 'package:trim_app/bloc/model/subscription_model.dart';
 import 'package:trim_app/bloc/salon_bloc/salon_state.dart';
+import 'package:trim_app/profile/profile_page.dart';
 
 import '../bloc/salon_bloc/salon_bloc.dart';
 import '../bloc/salon_bloc/salon_event.dart';
-
-class Subscriptions {
-  final String image;
-  final String title;
-  final String podcastCount;
-  bool isEnabled;
-
-  Subscriptions({
-    required this.image,
-    required this.title,
-    required this.podcastCount,
-    this.isEnabled = false,
-  });
-}
-
-final List<Subscriptions> subscriptions = [
-  Subscriptions(
-    image: "assets/images/img_23.png",
-    title: 'Uncle Chill',
-    podcastCount: 'ТЦ Зарафшан, Матбуотчилар, 17',
-  ),
-  Subscriptions(
-    image: "assets/images/img_27.png",
-    title: 'Genesis',
-    podcastCount: 'Массив Буюк Ипак Йули, 45а',
-  ),
-  Subscriptions(
-    image: "assets/images/img_28.png",
-    title: 'Santander',
-    podcastCount: 'Улица Фурката, 2а',
-  ),
-];
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -52,20 +21,18 @@ class _SearchPageState extends State<SearchPage> {
   final FocusNode searchFocus = FocusNode();
 
   final List<String> recentSearches = [
-    'Beauty Unleashed',
-    'Addictive Beauty',
-    'Metamorphisis salon',
-    'Big Hare We Care',
-    'Fade Factory',
+    'Uncle Chill',
     'Genesis',
     'Santander',
-    'Uncle Chill',
+    'Beauty Unleashed',
+    'Fade Factory',
+    'Metamorphosis Salon',
   ];
 
   @override
   void initState() {
     super.initState();
-
+    context.read<SalonBloc>().add(SalonsRequested());
     Future.delayed(const Duration(milliseconds: 400), () {
       searchFocus.requestFocus();
     });
@@ -76,6 +43,43 @@ class _SearchPageState extends State<SearchPage> {
     searchController.dispose();
     searchFocus.dispose();
     super.dispose();
+  }
+
+  Widget _buildSalonImage(String imagePath, {double? width, double? height, BoxFit fit = BoxFit.cover}) {
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return Image.network(
+        imagePath,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/images/img_23.png',
+          width: width,
+          height: height,
+          fit: fit,
+        ),
+      );
+    } else if (imagePath.isNotEmpty) {
+      return Image.asset(
+        imagePath,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/images/img_23.png',
+          width: width,
+          height: height,
+          fit: fit,
+        ),
+      );
+    } else {
+      return Image.asset(
+        'assets/images/img_23.png',
+        width: width,
+        height: height,
+        fit: fit,
+      );
+    }
   }
 
   double dragOffset = 0;
@@ -221,11 +225,19 @@ class _SearchPageState extends State<SearchPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        recentSearches[index],
-                        style: TextStyle(
-                          fontSize: 15.sp,
-                          color: Color(0xff777777),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            searchController.text = recentSearches[index];
+                            hasText = true;
+                          });
+                        },
+                        child: Text(
+                          recentSearches[index],
+                          style: TextStyle(
+                            fontSize: 15.sp,
+                            color: Color(0xff777777),
+                          ),
                         ),
                       ),
                       GestureDetector(
@@ -260,6 +272,8 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   Widget _searchResults() {
+    final query = searchController.text.toLowerCase();
+
     return Expanded(
       child: BlocBuilder<SalonBloc, SalonState>(
         builder: (context, state) {
@@ -272,9 +286,15 @@ class _SearchPageState extends State<SearchPage> {
           }
 
           if (state is SalonLoaded) {
-            if (subscriptions.isEmpty) {
+            final filtered = state.salons.where((salon) {
+              return salon.title.toLowerCase().contains(query) ||
+                  salon.podcastCount.toLowerCase().contains(query);
+            }).toList();
+
+            if (filtered.isEmpty) {
               return const Center(child: Text('Ничего не найдено'));
             }
+
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -289,7 +309,7 @@ class _SearchPageState extends State<SearchPage> {
                       ),
                     ),
                     Text(
-                      '${subscriptions.length} Найдено',
+                      '${filtered.length} Найдено',
                       style: TextStyle(
                         color: Color(0xffFD9301),
                         fontSize: 14.sp,
@@ -304,111 +324,139 @@ class _SearchPageState extends State<SearchPage> {
                 Expanded(
                   child: ListView.builder(
                     padding: EdgeInsets.zero,
-                    itemCount: subscriptions.length,
+                    itemCount: filtered.length,
                     itemBuilder: (context, index) {
-                      final salon = subscriptions[index];
+                      final salon = filtered[index];
 
-                      return Container(
-                        margin: EdgeInsets.only(bottom: 16.h),
-                        height: 100.h,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20.r),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0xffEEEEEE),
-                              blurRadius: 24.r,
-                              offset: Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            SizedBox(width: 12.w),
-
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(16.r),
-                              child: Image.network(
-                                salon.image,
-                                width: 70.w,
-                                height: 70.h,
-                                fit: BoxFit.cover,
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProfilePage(
+                                profile: salon,
+                                listImage: const [],
                               ),
                             ),
+                          );
+                        },
+                        child: Container(
+                          margin: EdgeInsets.only(bottom: 16.h),
+                          height: 100.h,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20.r),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color(0xffEEEEEE),
+                                blurRadius: 24.r,
+                                offset: Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              SizedBox(width: 12.w),
 
-                            SizedBox(width: 14.w),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(16.r),
+                                child: _buildSalonImage(
+                                  salon.image,
+                                  width: 70.w,
+                                  height: 70.h,
+                                ),
+                              ),
 
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        salon.title,
-                                        style: TextStyle(
-                                          fontSize: 15.sp,
-                                          fontWeight: FontWeight.w700,
+                              SizedBox(width: 14.w),
+
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          salon.title,
+                                          style: TextStyle(
+                                            fontSize: 15.sp,
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                         ),
-                                      ),
-                                      Spacer(),
-                                      Padding(
-                                        padding: EdgeInsets.only(
-                                          right: 16.w,
+                                        Spacer(),
+                                        Padding(
+                                          padding: EdgeInsets.only(
+                                            right: 16.w,
+                                          ),
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              context.read<SalonBloc>().add(
+                                                    ToggleFavoriteRequested(
+                                                      salonId: salon.id,
+                                                      currentStatus: salon.isEnabled,
+                                                    ),
+                                                  );
+                                            },
+                                            child: salon.isEnabled
+                                                ? Image.asset(
+                                                    'assets/images/img_29.png',
+                                                    width: 22.w,
+                                                    height: 22.h,
+                                                  )
+                                                : Image.asset(
+                                                    'assets/images/img_26.png',
+                                                    width: 22.w,
+                                                    height: 22.h,
+                                                  ),
+                                          ),
                                         ),
-                                        child: Image.asset(
-                                          'assets/images/img_26.png',
-                                          width: 22.w,
-                                          height: 22.h,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  SizedBox(height: 5.h),
-
-                                  Text(
-                                    salon.podcastCount,
-                                    style: TextStyle(
-                                      fontSize: 12.sp,
-                                      color: Colors.grey,
+                                      ],
                                     ),
-                                  ),
 
-                                  SizedBox(height: 5.h),
+                                    SizedBox(height: 5.h),
 
-                                  Row(
-                                    children: [
-                                      Image.asset(
-                                        'assets/images/img_24.png',
-                                        width: 15.w,
-                                        height: 15.h,
+                                    Text(
+                                      salon.podcastCount,
+                                      style: TextStyle(
+                                        fontSize: 12.sp,
+                                        color: Colors.grey,
                                       ),
-                                      SizedBox(width: 3.w),
-                                      Text(
-                                        '4.3 km',
-                                        style: TextStyle(fontSize: 12.sp),
-                                      ),
+                                    ),
 
-                                      SizedBox(width: 12.w),
+                                    SizedBox(height: 5.h),
 
-                                      Image.asset(
-                                        'assets/images/img_25.png',
-                                        width: 15.w,
-                                        height: 15.h,
-                                      ),
-                                      SizedBox(width: 3.w),
-                                      Text(
-                                        '4.9',
-                                        style: TextStyle(fontSize: 12.sp),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                    Row(
+                                      children: [
+                                        Image.asset(
+                                          'assets/images/img_24.png',
+                                          width: 15.w,
+                                          height: 15.h,
+                                        ),
+                                        SizedBox(width: 3.w),
+                                        Text(
+                                          '4.3 km',
+                                          style: TextStyle(fontSize: 12.sp),
+                                        ),
+
+                                        SizedBox(width: 12.w),
+
+                                        Image.asset(
+                                          'assets/images/img_25.png',
+                                          width: 15.w,
+                                          height: 15.h,
+                                        ),
+                                        SizedBox(width: 3.w),
+                                        Text(
+                                          salon.rating.toString(),
+                                          style: TextStyle(fontSize: 12.sp),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       );
                     },
@@ -423,4 +471,3 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 }
-

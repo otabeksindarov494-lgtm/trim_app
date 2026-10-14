@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:trim_app/profile/action_page.dart';
 import 'package:trim_app/profile/calendar_page.dart';
 import 'package:trim_app/profile/message_ai_page.dart';
-import 'package:trim_app/profile/message_page.dart';
 import 'package:trim_app/profile/review_widget.dart';
 import 'package:trim_app/profile/servise_widget.dart';
 import 'package:trim_app/profile/works_widget.dart';
@@ -60,6 +59,44 @@ class _ProfilePageState extends State<ProfilePage> {
   ];
   int isSelected = 0;
 
+  Widget _buildProfileImage(String imagePath, {double? width, double? height, BoxFit fit = BoxFit.cover}) {
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return Image.network(
+        imagePath,
+        width: width,
+        height: height,
+        fit: fit,
+        filterQuality: FilterQuality.high,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/images/img_23.png',
+          width: width,
+          height: height,
+          fit: fit,
+        ),
+      );
+    } else if (imagePath.isNotEmpty) {
+      return Image.asset(
+        imagePath,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/images/img_23.png',
+          width: width,
+          height: height,
+          fit: fit,
+        ),
+      );
+    } else {
+      return Image.asset(
+        'assets/images/img_23.png',
+        width: width,
+        height: height,
+        fit: fit,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,12 +110,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   Stack(
                     children: [
-                      Image.network(
+                      _buildProfileImage(
                         widget.profile.image,
                         width: 428.w,
                         height: 256.h,
                         fit: BoxFit.cover,
-                        filterQuality: FilterQuality.high,
                       ),
                       Positioned(
                         top: 78.h,

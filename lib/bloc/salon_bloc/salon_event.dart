@@ -9,3 +9,13 @@ abstract class SalonEvent extends Equatable {
 }
 
 class SalonsRequested extends SalonEvent {}
+
+class ToggleFavoriteRequested extends SalonEvent {
+  final String salonId;
+  final bool currentStatus;
+
+  const ToggleFavoriteRequested({required this.salonId, required this.currentStatus});
+
+  @override
+  List<Object?> get props => [salonId, currentStatus];
+}
