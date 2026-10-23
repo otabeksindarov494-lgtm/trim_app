@@ -5,23 +5,51 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:trim_app/auth_bloc/auth_bloc.dart';
-import 'package:trim_app/bloc/provider/profile_bloc.dart';
-import 'package:trim_app/bloc/provider/repository/auth_repository.dart';
-import 'package:trim_app/bloc/salon_bloc/salon_bloc.dart';
-import 'package:trim_app/l10n/app_localizations.dart';
-import 'package:trim_app/l10n/language_cubit.dart';
-import 'package:trim_app/profile/action_page.dart';
-import 'bloc/provider/repository/profile_repository.dart';
-import 'bloc/provider/repository/salon_repository.dart';
-import 'router/app_router.dart';
+import 'package:trim_app/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:trim_app/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:trim_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:trim_app/features/salon/presentation/bloc/salon_bloc.dart';
+import 'package:trim_app/core/l10n/app_localizations.dart';
+import 'package:trim_app/core/l10n/language_cubit.dart';
+import 'package:trim_app/core/theme/theme_cubit.dart';
+import 'package:trim_app/theme/app_theme.dart';
+import 'package:trim_app/features/profile/presentation/pages/action_page.dart';
+import 'package:trim_app/features/profile/data/repositories/profile_repository.dart';
+import 'package:trim_app/features/salon/data/repositories/salon_repository.dart';
+import 'package:trim_app/core/router/app_router.dart';
+import 'package:trim_app/widgets/common/glass.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print("Background message received: ${message.messageId}");
+}
 
 Future<void> main() async {
   await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp();
+
+  // Set background messaging handler
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Request permission and retrieve FCM token
+  try {
+    NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      String? token = await FirebaseMessaging.instance.getToken();
+      print("FCM Token: $token");
+    }
+  } catch (e) {
+    print("FCM initialization error: $e");
+  }
 
   await initializeDateFormatting('ru_RU');
   await initializeDateFormatting('uz_UZ');
@@ -75,13 +103,14 @@ Future<void> main() async {
         BlocProvider(
           create: (_) => LanguageCubit(),
         ),
+        BlocProvider(
+          create: (_) => ThemeCubit(),
+        ),
       ],
       child: MyApp(imageList: imageList),
     ),
   );
 }
-
-
 
 class MyApp extends StatelessWidget {
   MyApp({super.key, required this.imageList});
@@ -93,30 +122,37 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<LanguageCubit, Locale>(
       builder: (context, locale) {
-        return ScreenUtilInit(
-          designSize: const Size(411, 923),
-          minTextAdapt: true,
-          splitScreenMode: true,
-          builder: (context, child) {
-            return MaterialApp.router(
-              routerConfig: appRouter.config(),
-              locale: locale,
-              supportedLocales: const [
-                Locale('uz'),
-                Locale('ru'),
-              ],
-              localizationsDelegates: const [
-                AppLocalizations.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
+        return BlocBuilder<ThemeCubit, ThemeMode>(
+          builder: (context, themeMode) {
+            return ScreenUtilInit(
+              designSize: const Size(411, 923),
+              minTextAdapt: true,
+              splitScreenMode: true,
               builder: (context, child) {
-                return MediaQuery(
-                  data: MediaQuery.of(
-                    context,
-                  ).copyWith(textScaler: TextScaler.noScaling),
-                  child: child!,
+                return MaterialApp.router(
+                  routerConfig: appRouter.config(),
+                  locale: locale,
+                  themeMode: themeMode,
+                  theme: AppTheme.light,
+                  darkTheme: AppTheme.dark,
+                  supportedLocales: const [
+                    Locale('uz'),
+                    Locale('ru'),
+                  ],
+                  localizationsDelegates: const [
+                    AppLocalizations.delegate,
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                    GlobalCupertinoLocalizations.delegate,
+                  ],
+                  builder: (context, child) {
+                    return MediaQuery(
+                      data: MediaQuery.of(
+                        context,
+                      ).copyWith(textScaler: TextScaler.noScaling),
+                      child: GlassBackground(child: child!),
+                    );
+                  },
                 );
               },
             );
